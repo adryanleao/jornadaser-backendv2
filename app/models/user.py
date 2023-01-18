@@ -2,6 +2,7 @@ import uuid
 
 from app import db, models
 from app.models.base import BaseModel
+from app.services.aws.s3 import get_aws_image_keys
 
 """
 Credential levels
@@ -20,7 +21,7 @@ class User(db.Model, BaseModel):
 
     hash_id = db.Column(db.String(36), unique=True,
                         nullable=False, default=lambda x: str(uuid.uuid4()))
-    email = db.Column(db.String(255), unique=True, nullable=False)
+    email = db.Column(db.String(255), nullable=False)
     email_verified = db.Column(db.Boolean, default=0)
     token_update = db.Column(db.String(36))
     password = db.Column(db.String(255), nullable=False)
@@ -42,6 +43,12 @@ class User(db.Model, BaseModel):
     address = db.relationship('UserAddress', backref='user', lazy=True,
                               uselist=False)
 
+
+    def _get_image(self):
+        return get_aws_image_keys(self.image_key)
+
+    image = property(_get_image)
+    
     def _get_institutions(self):
         return models.UserInstitution.query.join(
             models.Institution,

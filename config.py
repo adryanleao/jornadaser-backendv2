@@ -55,3 +55,6 @@ class Config:
         CACHE_REDIS_HOST = os.environ.get("CACHE_REDIS_HOST")
         CACHE_REDIS_PORT = os.environ.get("CACHE_REDIS_PORT")
         CACHE_KEY_PREFIX = SITE_HTTPS
+
+    # Image
+    TINYPNG_API_KEY = os.environ.get("TINYPNG_API_KEY")

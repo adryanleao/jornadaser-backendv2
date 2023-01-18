@@ -2,6 +2,7 @@ import uuid
 from app import db
 
 from app.models.base import BaseModel
+from app.services.aws.s3 import get_aws_image_keys
 
 
 class Secretary(db.Model, BaseModel):
@@ -23,6 +24,11 @@ class Secretary(db.Model, BaseModel):
     address = db.relationship('SecretaryAddress', backref='secretary', lazy=True,
                                 uselist=False)
     
+
+    def _get_image(self):
+        return get_aws_image_keys(self.image_key)
+
+    image = property(_get_image)
     
     def create_item(self, dict_model):
         self.name = dict_model.get("name", self.name)

@@ -1,11 +1,12 @@
 import os
 import uuid
 import requests
+from app.services.aws.email import EmailService
 from app.services.requests.params import custom_parameters
 from app.services.user.relationship import create_user_institutions, create_user_secretaries
 from app.services.utils import code_generator
 
-from flask import request
+from flask import request, render_template
 from sqlalchemy import or_
 
 from app import models, schemas
@@ -66,10 +67,12 @@ class CRUDUser(CRUDBase):
         if taxpayer:
             query = query.filter(
                 or_(self.class_model.email == email,
-                    self.class_model.taxpayer == taxpayer))
+                    self.class_model.taxpayer == taxpayer), 
+                self.class_model.deleted_at.is_(None))
             msg = "Já existe usuário com este email ou cpf"
         else:
-            query = query.filter(self.class_model.email == email)
+            query = query.filter(self.class_model.email == email, 
+                                 self.class_model.deleted_at.is_(None))
             msg = "Já existe usuário com este email"
 
         item = query.first()
@@ -99,10 +102,12 @@ class CRUDUser(CRUDBase):
             self.get_user_with_exist(dict_body['email'])
 
         # add hash_id and hash in password
-        if 'password' in dict_body:
+        password_generator = None
+        if 'password' in dict_body and dict_body['password'] != '':
             password = dict_body['password']
         else:
             password = code_generator(8)
+            password_generator = password
         extra_fields = [("hash_id", str(uuid.uuid4())),
                         ("password", get_password_hash(password))]
 
@@ -115,7 +120,19 @@ class CRUDUser(CRUDBase):
         if 'address' in dict_body:
             dict_address['user_id'] = item.id
             crud_user_address.post(dict_body=dict_address)
-            
+        
+        # Send email
+        if password_generator:
+            to = item.email
+            subject = "Você foi cadastrado na plataforma Jornada Ser"
+            body = render_template('email/welcome.html',
+                                   name=item.name,
+                                   email=to,
+                                   password=password_generator,
+                                   url_confirm=os.getenv("URL_SITE"))
+
+            EmailService().send_aws(to, subject, body)
+
         create_user_institutions(item, dict_body)
         create_user_secretaries(item, dict_body)
         if schema:

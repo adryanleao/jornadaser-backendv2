@@ -191,7 +191,7 @@ def get_aws_image_keys_private(key):
         }
 
 
-def upload_image_s3_by_item(item, slug):
+def upload_image_s3_by_item(item, path):
     """
     It takes a file, uploads it to S3, and returns the URL of the uploaded file
     
@@ -199,22 +199,24 @@ def upload_image_s3_by_item(item, slug):
     :param slug: is the name of the folder where the image will be saved
     :return: The upload_image_s3_by_item function is returning the upload variable.
     """
-    dict_body = request.get_json()
-    name = item.id
+    try:
+        dict_body = request.get_json()
+    except:
+        dict_body = None
+        
     if dict_body:
         file = dict_body['image']
 
         file_exp = file.split(',')
         image = base64.b64decode(file_exp[1])
         ext = guess_extension(guess_type(file)[0])
-        upload = upload_file3(image, f'images/{slug}/{name}',
-                              str(uuid.uuid1()) + ext)
+        upload = upload_file3(image, f'images/{path}/{item.id}', str(uuid.uuid1()) + ext)
     else:
         if 'image' not in request.files:
             return 'Arquivo não Enviado'
 
         # Upload do Arquivo
         image = request.files['image']
-        upload = upload_file3(image, f'images/{slug}/{name}')
+        upload = upload_file3(image, f'images/{path}/{item.id}')
 
     return upload

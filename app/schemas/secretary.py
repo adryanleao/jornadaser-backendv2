@@ -20,6 +20,8 @@ class SecretarySchema(BaseSchema):
     address = fields.Nested('SecretaryAddressSchema',
                             exclude=('created_at', 'updated_at'))
 
+    image = fields.Nested('ImageSchema')
+    
     class Meta:
         unknown = EXCLUDE
         exclude = ('created_at', 'updated_at')

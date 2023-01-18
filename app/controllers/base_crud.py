@@ -268,7 +268,7 @@ class CRUDBase:
 
         return True
 
-    def put_image(self, id, slug):
+    def put_image(self, item_id, path):
         """
         It takes an id and a slug, gets the item from the database, deletes the old image from S3, uploads
         the new image to S3, updates the database with the new image key, and returns the new image key
@@ -277,13 +277,13 @@ class CRUDBase:
         :param slug: the name of the image
         :return: The data is being returned from the put_image function.
         """
-        item = self.get(id)
+        item = self.get(item_id)
         # delete old
         if item.image_key is not None:
             delete_file_s3(item.image_key)
 
         # upload new aws
-        upload = upload_image_s3_by_item(item, slug)
+        upload = upload_image_s3_by_item(item, path)
 
         # update new db
         item.image_key = upload["image_key"]
@@ -293,14 +293,14 @@ class CRUDBase:
 
         return data
 
-    def delete_image(self, id):
+    def delete_image(self, item_id):
         """
         It deletes an image from AWS S3 and updates the database
         
         :param id: the id of the item
         :return: The return value is a boolean value.
         """
-        item = self.get(id)
+        item = self.get(item_id)
 
         # delete image from aws
         delete_file_s3(item.image_key)

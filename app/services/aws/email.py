@@ -1,25 +1,16 @@
+from app.services.aws.s3 import ses
+
 class EmailService(object):
     def __init__(self, *args, **kwargs):
-        from app.services.extensions import ses
         self.conn = ses
 
     def send_aws(self, RECIPIENT, SUBJECT, TEXT,
-                 SENDER='comunidadecis@febracis.com.br'):
-        """
-        It sends an email.
-        
-        :param RECIPIENT: The email address of the recipient
-        :param SUBJECT: The subject of the email
-        :param TEXT: The body of the email
-        :param SENDER: The email address that will be shown as the sender of the email, defaults to
-        comunidadecis@febracis.com.br (optional)
-        :return: The response from the send_email method.
-        """
-                 
+                 SENDER='Jornada Ser <no-reply@minimegaleitor.com.br>'):
 
         CHARSET = "UTF-8"
         BODY_TEXT = TEXT
         BODY_HTML = TEXT
+
         try:
             response = self.conn.send_email(
                 Destination={

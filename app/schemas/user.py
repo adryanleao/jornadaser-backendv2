@@ -26,6 +26,8 @@ class UserSchema(BaseSchema):
     secretaries = fields.Nested('SecretarySchema', many=True,
                               exclude=('created_at', 'updated_at'), dump_only=True)
     
+    image = fields.Nested('ImageSchema')
+    
     class Meta:
         unknown = EXCLUDE
         exclude = ('created_at', 'updated_at')
